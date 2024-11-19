@@ -1,10 +1,10 @@
-import { isNullOrUndefined } from "util";
 import { Constants } from "./Constants";
 import { IJestStareConfig, PACKAGE_JSON_KEY } from "./doc/IJestStareConfig";
 import { EnvVars } from "./EnvVars";
 import { Logger } from "../utils/Logger";
 import { IProcessParms } from "./doc/IProcessParms";
 import { IO } from "../utils/IO";
+import { isNullOrUndefined } from "../utils/helpers";
 
 /**
  * Configuration for processor
@@ -12,13 +12,16 @@ import { IO } from "../utils/IO";
  * @class Config
  */
 export class Config {
-
     /**
      * Creates an instance of Config.
      * @param {IJestStareConfig} mExplicitConfig - explicit configuration
      * @memberof Config
      */
-    constructor(private mLogger: Logger, private mExplicitConfig: IJestStareConfig, private mProcessParms: IProcessParms) { }
+    constructor(
+        private mLogger: Logger,
+        private mExplicitConfig: IJestStareConfig,
+        private mProcessParms: IProcessParms
+    ) {}
 
     /**
      * Build config from explicit config, package.json, and defaults
@@ -26,13 +29,15 @@ export class Config {
      * @memberof Config
      */
     public buildConfig(): IJestStareConfig {
-
         // get configuration
         const packageJsonConfig = this.getJestStareConfig();
 
         // read environmental variables and merge them with the package.json config (env takes precedence)
         const envVars = new EnvVars();
-        const mergedEnvAndPackageJsonConfig = envVars.resolve(packageJsonConfig, envVars.read());
+        const mergedEnvAndPackageJsonConfig = envVars.resolve(
+            packageJsonConfig,
+            envVars.read()
+        );
 
         // explicit config takes precedence over  env and package.json
         const config = this.mExplicitConfig || mergedEnvAndPackageJsonConfig;
@@ -40,7 +45,10 @@ export class Config {
         // take packagejson options after setting explicit config (concatenate both)
         if (this.mExplicitConfig != null) {
             Object.keys(mergedEnvAndPackageJsonConfig).forEach((key) => {
-                if (isNullOrUndefined(this.mExplicitConfig[key]) && !isNullOrUndefined(mergedEnvAndPackageJsonConfig[key])) {
+                if (
+                    isNullOrUndefined(this.mExplicitConfig[key]) &&
+                    !isNullOrUndefined(mergedEnvAndPackageJsonConfig[key])
+                ) {
                     config[key] = mergedEnvAndPackageJsonConfig[key];
                 }
             });
@@ -54,7 +62,6 @@ export class Config {
             config.resultDir += "/"; // append an extra slash in case the user didn't add one
         }
 
-
         // suppress logging if requested
         // NOTE(Kelosky): must be first, to suppress all logging
         if (!isNullOrUndefined(config.log)) {
@@ -64,7 +71,6 @@ export class Config {
         // record if we were invoked programmatically
         // NOTE(Kelosky): should be second, to record if override config
         if (!isNullOrUndefined(this.mExplicitConfig)) {
-
             // display if not internal invocation
             if (this.mProcessParms && this.mProcessParms.reporter) {
                 // do nothing
@@ -79,7 +85,8 @@ export class Config {
         } else {
             if (config.resultHtml.indexOf(Constants.HTML_EXTENSION) === -1) {
                 // add .html if the user did not specify it
-                config.resultHtml = config.resultHtml + Constants.HTML_EXTENSION;
+                config.resultHtml =
+                    config.resultHtml + Constants.HTML_EXTENSION;
             }
         }
 
@@ -89,7 +96,6 @@ export class Config {
 
         return config;
     }
-
 
     /**
      * Read from the user's package.json, if present
@@ -107,5 +113,4 @@ export class Config {
             return packageJsonObject[PACKAGE_JSON_KEY];
         }
     }
-
 }

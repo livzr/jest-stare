@@ -1,4 +1,4 @@
-import { isNullOrUndefined } from "util";
+import { isNullOrUndefined } from "../../utils/helpers";
 
 /**
  * Associates a switch (checkbox) to a class to show if checked or hide if unchecked)
@@ -6,7 +6,6 @@ import { isNullOrUndefined } from "util";
  * @class Switch
  */
 export class Switch {
-
     /**
      * Ancestor title join character (We need to escape the "." in order to jquery to get the class correctly)
      * @static
@@ -39,9 +38,19 @@ export class Switch {
      * @memberof Switch
      */
     constructor(
-        checkBox: JQuery<HTMLInputElement>, divClass: JQuery<HTMLDivElement>, divClassName?: string,
-        addtnlCheckBoxArray?: JQuery<HTMLInputElement>[], addtnlClassNameArray?: string[]) {
-            this.activateFilters(checkBox, divClass, divClassName, addtnlCheckBoxArray, addtnlClassNameArray);
+        checkBox: JQuery<HTMLInputElement>,
+        divClass: JQuery<HTMLDivElement>,
+        divClassName?: string,
+        addtnlCheckBoxArray?: JQuery<HTMLInputElement>[],
+        addtnlClassNameArray?: string[]
+    ) {
+        this.activateFilters(
+            checkBox,
+            divClass,
+            divClassName,
+            addtnlCheckBoxArray,
+            addtnlClassNameArray
+        );
     }
 
     /**
@@ -55,45 +64,75 @@ export class Switch {
      * @memberof Switch
      */
     private activateFilters(
-        checkBox: JQuery<HTMLInputElement>, divClass: JQuery<HTMLDivElement>, divClassName?: string,
-        addtnlCheckBoxArray?: JQuery<HTMLInputElement>[], addtnlClassNameArray?: string[]) {
-            checkBox.change(() => {
-                if (checkBox.is(":checked")) {
-                    divClass.show();
-                    if (!isNullOrUndefined(addtnlCheckBoxArray)) {
-                        addtnlCheckBoxArray.forEach((addtnlCheckBox, index) => {
-                            const mixedDualClass = Switch.mixStatus(addtnlClassNameArray[index], divClassName);
-                            const mixedClassDiv = $("." + mixedDualClass) as JQuery<HTMLDivElement>;
-                            mixedClassDiv.show();
-                        });
+        checkBox: JQuery<HTMLInputElement>,
+        divClass: JQuery<HTMLDivElement>,
+        divClassName?: string,
+        addtnlCheckBoxArray?: JQuery<HTMLInputElement>[],
+        addtnlClassNameArray?: string[]
+    ) {
+        checkBox.change(() => {
+            if (checkBox.is(":checked")) {
+                divClass.show();
+                if (!isNullOrUndefined(addtnlCheckBoxArray)) {
+                    addtnlCheckBoxArray.forEach((addtnlCheckBox, index) => {
+                        const mixedDualClass = Switch.mixStatus(
+                            addtnlClassNameArray[index],
+                            divClassName
+                        );
+                        const mixedClassDiv = $(
+                            "." + mixedDualClass
+                        ) as JQuery<HTMLDivElement>;
+                        mixedClassDiv.show();
+                    });
 
-                        const mixedClass = Switch.mixStatus(addtnlClassNameArray[0], divClassName);
-                        const allMixedClass = Switch.mixStatus(addtnlClassNameArray[1], mixedClass);
-                        const allMixedClassDiv =  $("." + allMixedClass) as JQuery<HTMLDivElement>;
-                        allMixedClassDiv.show();
-                    }
-                } else {
-                    divClass.hide();
-                    if (!isNullOrUndefined(addtnlCheckBoxArray)) {
-                        let allUnchecked = true;
-                        addtnlCheckBoxArray.forEach((addtnlCheckBox, index) => {
-                            if (!addtnlCheckBox.is(":checked")) {
-                                const mixedClass = Switch.mixStatus(addtnlClassNameArray[index], divClassName);
-                                const mixedClassDiv = $("." + mixedClass) as JQuery<HTMLDivElement>;
-                                mixedClassDiv.hide();
-                            } else {
-                                allUnchecked = false;
-                            }
-                        });
-
-                        if (allUnchecked) {
-                            const mixedClass = Switch.mixStatus(addtnlClassNameArray[0], divClassName);
-                            const allMixedClass = Switch.mixStatus(addtnlClassNameArray[1], mixedClass);
-                            const allMixedClassDiv =  $("." + allMixedClass) as JQuery<HTMLDivElement>;
-                            allMixedClassDiv.hide();
+                    const mixedClass = Switch.mixStatus(
+                        addtnlClassNameArray[0],
+                        divClassName
+                    );
+                    const allMixedClass = Switch.mixStatus(
+                        addtnlClassNameArray[1],
+                        mixedClass
+                    );
+                    const allMixedClassDiv = $(
+                        "." + allMixedClass
+                    ) as JQuery<HTMLDivElement>;
+                    allMixedClassDiv.show();
+                }
+            } else {
+                divClass.hide();
+                if (!isNullOrUndefined(addtnlCheckBoxArray)) {
+                    let allUnchecked = true;
+                    addtnlCheckBoxArray.forEach((addtnlCheckBox, index) => {
+                        if (!addtnlCheckBox.is(":checked")) {
+                            const mixedClass = Switch.mixStatus(
+                                addtnlClassNameArray[index],
+                                divClassName
+                            );
+                            const mixedClassDiv = $(
+                                "." + mixedClass
+                            ) as JQuery<HTMLDivElement>;
+                            mixedClassDiv.hide();
+                        } else {
+                            allUnchecked = false;
                         }
+                    });
+
+                    if (allUnchecked) {
+                        const mixedClass = Switch.mixStatus(
+                            addtnlClassNameArray[0],
+                            divClassName
+                        );
+                        const allMixedClass = Switch.mixStatus(
+                            addtnlClassNameArray[1],
+                            mixedClass
+                        );
+                        const allMixedClassDiv = $(
+                            "." + allMixedClass
+                        ) as JQuery<HTMLDivElement>;
+                        allMixedClassDiv.hide();
                     }
                 }
-            });
+            }
+        });
     }
 }

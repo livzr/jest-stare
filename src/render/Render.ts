@@ -7,9 +7,9 @@ import { TestSuite } from "./suites/TestSuite";
 import { TestSummary } from "./summary/TestSummary";
 import { IChartData } from "./doc/IChartData";
 import { IJestStareConfig } from "../processor/doc/IJestStareConfig";
-import { isNullOrUndefined } from "util";
 import { AggregatedResult } from "@jest/test-result";
 import { Config } from "@jest/types";
+import { isNullOrUndefined } from "../utils/helpers";
 
 /**
  * Adjust DOM to display JSON data
@@ -17,7 +17,6 @@ import { Config } from "@jest/types";
  * @class Render
  */
 export class Render {
-
     /**
      * Wait for DOM load then show
      * @static
@@ -26,14 +25,26 @@ export class Render {
      */
     public static init() {
         document.addEventListener("DOMContentLoaded", () => {
-            const config: IJestStareConfig = JSON.parse($("#test-config").text());
-            const results: AggregatedResult = JSON.parse($("#test-results").text());
+            const config: IJestStareConfig = JSON.parse(
+                $("#test-config").text()
+            );
+            const results: AggregatedResult = JSON.parse(
+                $("#test-results").text()
+            );
 
             try {
-                const globalConfig: Config.InitialOptions = JSON.parse($("#test-global-config").text());
-                const regex = new RegExp(Render.escapeRegExp(globalConfig.rootDir), "g");
+                const globalConfig: Config.InitialOptions = JSON.parse(
+                    $("#test-global-config").text()
+                );
+                const regex = new RegExp(
+                    Render.escapeRegExp(globalConfig.rootDir),
+                    "g"
+                );
                 results.testResults.forEach((testResult) => {
-                    testResult.testFilePath = testResult.testFilePath.replace(regex, "");
+                    testResult.testFilePath = testResult.testFilePath.replace(
+                        regex,
+                        ""
+                    );
                 });
             } catch (e) {
                 // do nothing
@@ -64,7 +75,6 @@ export class Render {
      * @memberof Render
      */
     private static show(results: AggregatedResult, config: IJestStareConfig) {
-
         const labels = [Constants.PASSED_LABEL, Constants.FAILED_LABEL];
         const backgroundColor = [Constants.PASS, Constants.FAIL];
 
@@ -76,17 +86,38 @@ export class Render {
 
         if (!config.disableCharts) {
             // build suites chart
-            const suitesData = Render.buildChartsData(results.numPassedTestSuites, results.numFailedTestSuites, results.numPendingTestSuites);
-            Doughnut.createChart($("#test-suites-canvas") as JQuery<HTMLCanvasElement>, suitesData);
+            const suitesData = Render.buildChartsData(
+                results.numPassedTestSuites,
+                results.numFailedTestSuites,
+                results.numPendingTestSuites
+            );
+            Doughnut.createChart(
+                $("#test-suites-canvas") as JQuery<HTMLCanvasElement>,
+                suitesData
+            );
 
             // build tests chart
-            const testsChart = Render.buildChartsData(results.numPassedTests, results.numFailedTests, results.numPendingTests, results.numTodoTests);
-            Doughnut.createChart($("#tests-canvas") as JQuery<HTMLCanvasElement>, testsChart);
+            const testsChart = Render.buildChartsData(
+                results.numPassedTests,
+                results.numFailedTests,
+                results.numPendingTests,
+                results.numTodoTests
+            );
+            Doughnut.createChart(
+                $("#tests-canvas") as JQuery<HTMLCanvasElement>,
+                testsChart
+            );
 
             // base snapshot data
-            let snapshotChart = Render.buildChartsData(results.snapshot.matched, results.snapshot.unmatched);
+            let snapshotChart = Render.buildChartsData(
+                results.snapshot.matched,
+                results.snapshot.unmatched
+            );
             snapshotChart = Render.addSnapshotChartData(results, snapshotChart);
-            Doughnut.createChart($("#snapshots-canvas") as JQuery<HTMLCanvasElement>, snapshotChart);
+            Doughnut.createChart(
+                $("#snapshots-canvas") as JQuery<HTMLCanvasElement>,
+                snapshotChart
+            );
         }
 
         // update status area
@@ -141,18 +172,37 @@ export class Render {
         }
 
         if (config.hideFailing && config.hidePassing && config.hidePending) {
-            $(`.${Constants.FAILED_TEST}\\.${Constants.PASSED_TEST}\\.${Constants.PENDING_TEST}`).hide();
+            $(
+                `.${Constants.FAILED_TEST}\\.${Constants.PASSED_TEST}\\.${Constants.PENDING_TEST}`
+            ).hide();
         }
 
-
         const allCheckArray = new Array<JQuery<HTMLInputElement>>();
-        allCheckArray.push($("#lab-passoff-switch") as JQuery<HTMLInputElement>);
-        allCheckArray.push($("#lab-failoff-switch") as JQuery<HTMLInputElement>);
-        allCheckArray.push($("#lab-pendingoff-switch") as JQuery<HTMLInputElement>);
-        allCheckArray.push($("#lab-todooff-switch") as JQuery<HTMLInputElement>);
+        allCheckArray.push(
+            $("#lab-passoff-switch") as JQuery<HTMLInputElement>
+        );
+        allCheckArray.push(
+            $("#lab-failoff-switch") as JQuery<HTMLInputElement>
+        );
+        allCheckArray.push(
+            $("#lab-pendingoff-switch") as JQuery<HTMLInputElement>
+        );
+        allCheckArray.push(
+            $("#lab-todooff-switch") as JQuery<HTMLInputElement>
+        );
 
-        const allStylesArray = [Constants.PASSED_TEST, Constants.FAILED_TEST, Constants.PENDING_TEST, Constants.TODO_TEST];
-        const allSwitchArray = ["#lab-passoff-switch", "#lab-failoff-switch", "#lab-pendingoff-switch", "#lab-todooff-switch"];
+        const allStylesArray = [
+            Constants.PASSED_TEST,
+            Constants.FAILED_TEST,
+            Constants.PENDING_TEST,
+            Constants.TODO_TEST,
+        ];
+        const allSwitchArray = [
+            "#lab-passoff-switch",
+            "#lab-failoff-switch",
+            "#lab-pendingoff-switch",
+            "#lab-todooff-switch",
+        ];
 
         allStylesArray.forEach((style, index) => {
             const checksMinusCurrentOne = allCheckArray.slice();
@@ -180,23 +230,34 @@ export class Render {
     private static updateStatusArea(results: AggregatedResult) {
         Status.setResultsClass(
             $("#test-suites-results") as JQuery<HTMLParagraphElement>,
-            results.numPassedTestSuites, results.numTotalTestSuites - results.numPassedTestSuites - results.numPendingTestSuites);
+            results.numPassedTestSuites,
+            results.numTotalTestSuites -
+                results.numPassedTestSuites -
+                results.numPendingTestSuites
+        );
         Status.setResultsClass(
             $("#tests-results") as JQuery<HTMLParagraphElement>,
-            results.numPassedTests, results.numTotalTests - results.numPassedTests - results.numPendingTests);
+            results.numPassedTests,
+            results.numTotalTests -
+                results.numPassedTests -
+                results.numPendingTests
+        );
         Status.setResultsClass(
             $("#snapshots-results") as JQuery<HTMLParagraphElement>,
-            results.snapshot.matched, results.snapshot.unmatched);
+            results.snapshot.matched,
+            results.snapshot.unmatched
+        );
 
-        if (results.snapshot.added === 0 &&
+        if (
+            results.snapshot.added === 0 &&
             results.snapshot.matched === 0 &&
             results.snapshot.unchecked === 0 &&
             results.snapshot.unmatched === 0 &&
-            results.snapshot.updated === 0) {
+            results.snapshot.updated === 0
+        ) {
             $("#snapshots-group").hide();
         }
     }
-
 
     /**
      * Set report title if presented in jest-stare config
@@ -206,7 +267,9 @@ export class Render {
      * @memberof Render
      */
     private static setReportTitle(config: IJestStareConfig) {
-        const tabTitle = !isNullOrUndefined(config.reportTitle) ? config.reportTitle : "jest-stare!";
+        const tabTitle = !isNullOrUndefined(config.reportTitle)
+            ? config.reportTitle
+            : "jest-stare!";
         document.title = tabTitle;
     }
 
@@ -218,7 +281,9 @@ export class Render {
      * @memberof Render
      */
     private static setReportHeadline(config: IJestStareConfig) {
-        const brandTitle =  !isNullOrUndefined(config.reportHeadline) ? config.reportHeadline : "jest-stare";
+        const brandTitle = !isNullOrUndefined(config.reportHeadline)
+            ? config.reportHeadline
+            : "jest-stare";
         const a = $("#navbar-title");
         a.text(brandTitle);
     }
@@ -248,7 +313,12 @@ export class Render {
      * @returns {IChartData} - populated chart data object
      * @memberof Render
      */
-    private static buildChartsData(passedTests: number, failedTests: number, pendingTests?: number, todoTests?: number): IChartData {
+    private static buildChartsData(
+        passedTests: number,
+        failedTests: number,
+        pendingTests?: number,
+        todoTests?: number
+    ): IChartData {
         const chartData: IChartData = {
             labels: [],
             backgroundColor: [],
@@ -291,8 +361,10 @@ export class Render {
      * @returns {IChartData} - completed snapshot chart
      * @memberof Render
      */
-    private static addSnapshotChartData(results: AggregatedResult, snapshotChart: IChartData): IChartData {
-
+    private static addSnapshotChartData(
+        results: AggregatedResult,
+        snapshotChart: IChartData
+    ): IChartData {
         // add info about added snapshots if present
         if (results.snapshot.filesAdded > 0) {
             snapshotChart.labels.push(Constants.ADDED_LABEL);
@@ -306,12 +378,20 @@ export class Render {
         // if didUpdate = true, the file was removed, otherwise its just a warning
         if (results.snapshot.unchecked > 0) {
             if (results.snapshot.didUpdate) {
-                snapshotChart.labels.push(Constants.UPDATED_SNAPSHOT_TEST_LABEL);
-                snapshotChart.backgroundColor.push(Constants.UPDATED_SNAPSHOT_TEST);
+                snapshotChart.labels.push(
+                    Constants.UPDATED_SNAPSHOT_TEST_LABEL
+                );
+                snapshotChart.backgroundColor.push(
+                    Constants.UPDATED_SNAPSHOT_TEST
+                );
                 snapshotChart.data.push(results.snapshot.unchecked);
             } else {
-                snapshotChart.labels.push(Constants.OBSOLETE_SNAPSHOT_TEST_LABEL);
-                snapshotChart.backgroundColor.push(Constants.OBSOLETE_SNAPSHOT_TEST);
+                snapshotChart.labels.push(
+                    Constants.OBSOLETE_SNAPSHOT_TEST_LABEL
+                );
+                snapshotChart.backgroundColor.push(
+                    Constants.OBSOLETE_SNAPSHOT_TEST
+                );
                 snapshotChart.data.push(results.snapshot.unchecked);
             }
         }
@@ -328,19 +408,25 @@ export class Render {
         // have a snapshot file which contains just a comment and not snapshots
         // if didUpdate = true, the file was removed, otherwise its just a warning
         if (results.snapshot.filesRemoved > 0) {
-
             if (results.snapshot.didUpdate) {
-                snapshotChart.labels.push(Constants.REMOVED_OBSOLETE_SNAPSHOT_FILE_LABEL);
-                snapshotChart.backgroundColor.push(Constants.REMOVED_OBSOLETE_SNAPSHOT_FILE);
+                snapshotChart.labels.push(
+                    Constants.REMOVED_OBSOLETE_SNAPSHOT_FILE_LABEL
+                );
+                snapshotChart.backgroundColor.push(
+                    Constants.REMOVED_OBSOLETE_SNAPSHOT_FILE
+                );
                 snapshotChart.data.push(results.snapshot.filesRemoved);
             } else {
-                snapshotChart.labels.push(Constants.OBSOLETE_SNAPSHOT_FILE_LABEL);
-                snapshotChart.backgroundColor.push(Constants.OBSOLETE_SNAPSHOT_FILE);
+                snapshotChart.labels.push(
+                    Constants.OBSOLETE_SNAPSHOT_FILE_LABEL
+                );
+                snapshotChart.backgroundColor.push(
+                    Constants.OBSOLETE_SNAPSHOT_FILE
+                );
                 snapshotChart.data.push(results.snapshot.filesRemoved);
             }
         }
 
         return snapshotChart;
     }
-
 }

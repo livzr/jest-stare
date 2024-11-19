@@ -1,6 +1,7 @@
-import { format, isNullOrUndefined } from "util";
+import { format } from "util";
 import * as moment from "moment";
 import * as chalk from "chalk";
+import { isNullOrUndefined } from "./helpers";
 
 /**
  * Class to contain writing log messages
@@ -8,13 +9,19 @@ import * as chalk from "chalk";
  * @class Logger
  */
 export class Logger {
-
     /**
      * Supported levels of logging
      * @static
      * @memberof Logger
      */
-    public static readonly LEVELS = ["trace", "debug", "info", "warn", "error", "fatal"];
+    public static readonly LEVELS = [
+        "trace",
+        "debug",
+        "info",
+        "warn",
+        "error",
+        "fatal",
+    ];
 
     /**
      * Default log level
@@ -119,7 +126,10 @@ export class Logger {
      * @memberof Logger
      */
     public isTraceEnabled(): boolean {
-        return Logger.LEVELS.indexOf("trace") >= Logger.LEVELS.indexOf(this.level) ? this.on : false;
+        return Logger.LEVELS.indexOf("trace") >=
+            Logger.LEVELS.indexOf(this.level)
+            ? this.on
+            : false;
     }
 
     /**
@@ -128,7 +138,10 @@ export class Logger {
      * @memberof Logger
      */
     public isDebugEnabled(): boolean {
-        return Logger.LEVELS.indexOf("debug") >= Logger.LEVELS.indexOf(this.level) ? this.on : false;
+        return Logger.LEVELS.indexOf("debug") >=
+            Logger.LEVELS.indexOf(this.level)
+            ? this.on
+            : false;
     }
 
     /**
@@ -137,7 +150,10 @@ export class Logger {
      * @memberof Logger
      */
     public isInfoEnabled(): boolean {
-        return Logger.LEVELS.indexOf("info") >= Logger.LEVELS.indexOf(this.level) ? this.on : false;
+        return Logger.LEVELS.indexOf("info") >=
+            Logger.LEVELS.indexOf(this.level)
+            ? this.on
+            : false;
     }
 
     /**
@@ -146,7 +162,10 @@ export class Logger {
      * @memberof Logger
      */
     public isWarnEnabled(): boolean {
-        return Logger.LEVELS.indexOf("warn") >= Logger.LEVELS.indexOf(this.level) ? this.on : false;
+        return Logger.LEVELS.indexOf("warn") >=
+            Logger.LEVELS.indexOf(this.level)
+            ? this.on
+            : false;
     }
 
     /**
@@ -155,7 +174,10 @@ export class Logger {
      * @memberof Logger
      */
     public isErrorEnabled(): boolean {
-        return Logger.LEVELS.indexOf("error") >= Logger.LEVELS.indexOf(this.level) ? this.on : false;
+        return Logger.LEVELS.indexOf("error") >=
+            Logger.LEVELS.indexOf(this.level)
+            ? this.on
+            : false;
     }
 
     /**
@@ -164,7 +186,10 @@ export class Logger {
      * @memberof Logger
      */
     public isFatalEnabled(): boolean {
-        return Logger.LEVELS.indexOf("fatal") >= Logger.LEVELS.indexOf(this.level) ? this.on : false;
+        return Logger.LEVELS.indexOf("fatal") >=
+            Logger.LEVELS.indexOf(this.level)
+            ? this.on
+            : false;
     }
 
     /**
@@ -358,7 +383,16 @@ export class Logger {
      * @memberof Logger
      */
     private buildPrefix(type: string) {
-        return "[" + moment().format("YYYY/MM/DD HH:MM:SS") + "]" + " " + "[" + type + "]" + " ";
+        return (
+            "[" +
+            moment().format("YYYY/MM/DD HH:MM:SS") +
+            "]" +
+            " " +
+            "[" +
+            type +
+            "]" +
+            " "
+        );
     }
 
     /**

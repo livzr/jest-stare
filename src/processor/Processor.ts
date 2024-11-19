@@ -8,11 +8,11 @@ import { Logger } from "../utils/Logger";
 import * as chalk from "chalk";
 import { IThirdPartyDependency } from "./doc/IThirdPartyDependency";
 import { Dependencies } from "./Dependencies";
-import { isNullOrUndefined } from "util";
 import { IProcessParms } from "./doc/IProcessParms";
 import { Config } from "./Config";
 import { ImageSnapshotDifference } from "../render/diff/ImageSnapshotDifference";
 import { AggregatedResult } from "@jest/test-result";
+import { isNullOrUndefined } from "../utils/helpers";
 
 /**
  * Class to post process jest output and summarize information in an html file
@@ -20,7 +20,6 @@ import { AggregatedResult } from "@jest/test-result";
  * @class Processor
  */
 export class Processor {
-
     /**
      * Main exported method to obtain and return summary results
      * @static
@@ -30,8 +29,11 @@ export class Processor {
      * @returns - returns input results object
      * @memberof Processor
      */
-    public static run(results: AggregatedResult, explicitConfig?: IJestStareConfig, parms?: IProcessParms) {
-
+    public static run(
+        results: AggregatedResult,
+        explicitConfig?: IJestStareConfig,
+        parms?: IProcessParms
+    ) {
         return new Processor(results, explicitConfig, parms).generate();
     }
 
@@ -50,8 +52,11 @@ export class Processor {
      * @param {IProcessParms} [mProcessParms] - parms object to control process behavior
      * @memberof Processor
      */
-    constructor(private mResults: AggregatedResult, private mExplicitConfig?: IJestStareConfig, private mProcessParms?: IProcessParms) {
-    }
+    constructor(
+        private mResults: AggregatedResult,
+        private mExplicitConfig?: IJestStareConfig,
+        private mProcessParms?: IProcessParms
+    ) {}
 
     /**
      * Generate a report after constructed
@@ -67,7 +72,11 @@ export class Processor {
             throw new Error(Constants.NO_INPUT);
         }
 
-        const config = new Config(this.logger, this.mExplicitConfig, this.mProcessParms).buildConfig();
+        const config = new Config(
+            this.logger,
+            this.mExplicitConfig,
+            this.mProcessParms
+        ).buildConfig();
 
         // build mustache render substitution values
         substitute.results = this.mResults;
@@ -78,7 +87,11 @@ export class Processor {
         // save in reporter
         if (this.mProcessParms && this.mProcessParms.reporter) {
             this.mProcessParms.reporter.jestStareConfig = config;
-            substitute.globalConfig = JSON.stringify(this.mProcessParms.reporter.mGlobalConfig, null, 2);
+            substitute.globalConfig = JSON.stringify(
+                this.mProcessParms.reporter.mGlobalConfig,
+                null,
+                2
+            );
         }
 
         // generate report
@@ -98,33 +111,47 @@ export class Processor {
      * @param resultDir
      * @param parms
      */
-    private collectImageSnapshots(resultDir: string, results: AggregatedResult) {
+    private collectImageSnapshots(
+        resultDir: string,
+        results: AggregatedResult
+    ) {
         results.testResults.forEach((rootResult) => {
-
             if (rootResult.numFailingTests) {
-
                 rootResult.testResults.forEach((testResult) => {
-
                     testResult.failureMessages.forEach((failureMessage) => {
+                        if (
+                            typeof failureMessage === "string" &&
+                            ImageSnapshotDifference.containsDiff(failureMessage)
+                        ) {
+                            const diffImagePath =
+                                ImageSnapshotDifference.parseDiffImagePath(
+                                    failureMessage
+                                );
+                            const diffImageName =
+                                ImageSnapshotDifference.parseDiffImageName(
+                                    failureMessage
+                                );
 
-                        if (typeof failureMessage === "string" &&
-                         ImageSnapshotDifference.containsDiff(failureMessage)) {
+                            if (IO.existsSync(diffImagePath)) {
+                                IO.mkdirsSync(
+                                    resultDir +
+                                        Constants.IMAGE_SNAPSHOT_DIFF_DIR
+                                );
 
-                         const diffImagePath = ImageSnapshotDifference.parseDiffImagePath(failureMessage);
-                         const diffImageName = ImageSnapshotDifference.parseDiffImageName(failureMessage);
-
-                         if (IO.existsSync(diffImagePath)) {
-                             IO.mkdirsSync(resultDir + Constants.IMAGE_SNAPSHOT_DIFF_DIR);
-
-                             const reportDiffImagePath = resultDir + Constants.IMAGE_SNAPSHOT_DIFF_DIR + diffImageName;
-                             IO.copyFileSync(diffImagePath, reportDiffImagePath);
-                         }
+                                const reportDiffImagePath =
+                                    resultDir +
+                                    Constants.IMAGE_SNAPSHOT_DIFF_DIR +
+                                    diffImageName;
+                                IO.copyFileSync(
+                                    diffImagePath,
+                                    reportDiffImagePath
+                                );
+                            }
                         }
                     });
                 });
             }
         });
-
     }
 
     /**
@@ -135,41 +162,71 @@ export class Processor {
      * @param {ISettings} settings - settings for IO
      * @memberof Processor
      */
-    private generateReport(resultDir: string, substitute: ISubstitute, parms: IProcessParms) {
+    private generateReport(
+        resultDir: string,
+        substitute: ISubstitute,
+        parms: IProcessParms
+    ) {
         // create directory
         IO.mkdirsSync(resultDir);
 
         // create raw json
-        IO.writeFileSync(resultDir + substitute.jestStareConfig.resultJson, substitute.rawResults);
+        IO.writeFileSync(
+            resultDir + substitute.jestStareConfig.resultJson,
+            substitute.rawResults
+        );
 
         // create jest-stare config if requested
         if (substitute.jestStareConfig.jestStareConfigJson) {
-            IO.writeFileSync(resultDir + substitute.jestStareConfig.jestStareConfigJson, substitute.rawJestStareConfig);
+            IO.writeFileSync(
+                resultDir + substitute.jestStareConfig.jestStareConfigJson,
+                substitute.rawJestStareConfig
+            );
         }
 
         // create global config if requested
-        if (substitute.globalConfig && substitute.jestStareConfig.jestGlobalConfigJson) {
-            IO.writeFileSync(resultDir + substitute.jestStareConfig.jestGlobalConfigJson, substitute.globalConfig);
+        if (
+            substitute.globalConfig &&
+            substitute.jestStareConfig.jestGlobalConfigJson
+        ) {
+            IO.writeFileSync(
+                resultDir + substitute.jestStareConfig.jestGlobalConfigJson,
+                substitute.globalConfig
+            );
         }
 
         // exit here for JSON only retain
-        if (substitute.jestStareConfig.report != null && !substitute.jestStareConfig.report) {
+        if (
+            substitute.jestStareConfig.report != null &&
+            !substitute.jestStareConfig.report
+        ) {
             return;
         }
 
         // create base html file
-        IO.writeFileSync(resultDir + substitute.jestStareConfig.resultHtml,
-            mustache.render(this.obtainWebFile(Constants.TEMPLATE_HTML), substitute));
+        IO.writeFileSync(
+            resultDir + substitute.jestStareConfig.resultHtml,
+            mustache.render(
+                this.obtainWebFile(Constants.TEMPLATE_HTML),
+                substitute
+            )
+        );
 
         // create our css
         const cssDir = resultDir + Constants.CSS_DIR;
         IO.mkdirsSync(cssDir);
-        IO.writeFileSync(cssDir + Constants.JEST_STARE_CSS, this.obtainWebFile(Constants.JEST_STARE_CSS));
+        IO.writeFileSync(
+            cssDir + Constants.JEST_STARE_CSS,
+            this.obtainWebFile(Constants.JEST_STARE_CSS)
+        );
 
         // create our js
         const jsDir = resultDir + Constants.JS_DIR;
         IO.mkdirsSync(jsDir);
-        IO.writeFileSync(jsDir + Constants.JEST_STARE_JS, this.obtainJsRenderFile(Constants.JEST_STARE_JS));
+        IO.writeFileSync(
+            jsDir + Constants.JEST_STARE_JS,
+            this.obtainJsRenderFile(Constants.JEST_STARE_JS)
+        );
 
         // add third party dependencies
         Dependencies.THIRD_PARTY_DEPENDENCIES.forEach((dependency) => {
@@ -181,8 +238,18 @@ export class Processor {
 
         // log complete
         let type = " ";
-        type += (parms && parms.reporter) ? Constants.REPORTERS : Constants.TEST_RESULTS_PROCESSOR;
-        this.logger.info(Constants.LOGO + type + Constants.LOG_MESSAGE + resultDir + substitute.jestStareConfig.resultHtml + Constants.SUFFIX);
+        type +=
+            parms && parms.reporter
+                ? Constants.REPORTERS
+                : Constants.TEST_RESULTS_PROCESSOR;
+        this.logger.info(
+            Constants.LOGO +
+                type +
+                Constants.LOG_MESSAGE +
+                resultDir +
+                substitute.jestStareConfig.resultHtml +
+                Constants.SUFFIX
+        );
     }
 
     /**
@@ -195,19 +262,33 @@ export class Processor {
      *                     to forward the data to
      * @memberof Processor
      */
-    private execute(jestTestData: AggregatedResult, processors: string[]): void {
+    private execute(
+        jestTestData: AggregatedResult,
+        processors: string[]
+    ): void {
         for (const processor of processors) {
             if (processor === Constants.NAME) {
-                this.logger.error("Error: In order to avoid infinite loops, " +
-                    "jest-stare cannot be listed as an additional processor. Skipping... ");
+                this.logger.error(
+                    "Error: In order to avoid infinite loops, " +
+                        "jest-stare cannot be listed as an additional processor. Skipping... "
+                );
                 continue;
             }
             try {
                 require(processor)(jestTestData);
-                this.logger.info(Constants.LOGO + " passed results to additional processor " +
-                    chalk.white("\"" + processor + "\"") + Constants.SUFFIX);
+                this.logger.info(
+                    Constants.LOGO +
+                        " passed results to additional processor " +
+                        chalk.white('"' + processor + '"') +
+                        Constants.SUFFIX
+                );
             } catch (e) {
-                this.logger.error("Error executing additional processor: \"" + processor + "\" " + e);
+                this.logger.error(
+                    'Error executing additional processor: "' +
+                        processor +
+                        '" ' +
+                        e
+                );
             }
         }
     }
@@ -219,8 +300,13 @@ export class Processor {
      * @memberof Processor
      */
     private async addThirdParty(dependency: IThirdPartyDependency) {
-        const location = require.resolve(dependency.requireDir + dependency.file);
-        await IO.writeFileSync(dependency.targetDir + dependency.file, IO.readFileSync(location));
+        const location = require.resolve(
+            dependency.requireDir + dependency.file
+        );
+        await IO.writeFileSync(
+            dependency.targetDir + dependency.file,
+            IO.readFileSync(location)
+        );
     }
 
     /**
